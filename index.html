@@ -14,7 +14,10 @@
     button:hover:not(:disabled) { background-color: #005a9e; }
     button:disabled { background-color: #ccc; cursor: not-allowed; }
     #qr-container { text-align: center; margin-top: 2rem; }
-    #qr-text { white-space: pre-wrap; word-break: break-word; display: none; }
+    #table-container { margin-top: 2rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #333; padding: 0.5rem; }
+    th { background: #f4f4f4; text-align: left; }
     .error { color: #d8000c; font-size: 0.9rem; margin-top: 0.2rem; }
   </style>
 </head>
@@ -31,11 +34,11 @@
   <div id="qr-container">
     <canvas id="qr-canvas"></canvas>
   </div>
+  <div id="table-container"></div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof QRious !== 'function') {
-        alert('QRious library failed to load.');
-        return;
+        alert('QRious library failed to load.'); return;
       }
       function escapeHtml(str) {
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -68,22 +71,18 @@
         });
       }
       function validateInputs() {
-        let valid = true;
-        clearErrors();
+        let valid = true; clearErrors();
         const tasklist = document.getElementById('tasklist').value.trim();
         if (!tasklist) {
-          document.getElementById('error-tasklist').textContent = 'Required';
-          valid = false;
+          document.getElementById('error-tasklist').textContent = 'Required'; valid = false;
         }
         reagents.forEach(name => {
           const id = name.replace(/\s+/g, '_');
           if (!document.getElementById(`lot-${id}`).value.trim()) {
-            document.getElementById(`error-lot-${id}`).textContent = 'Required';
-            valid = false;
+            document.getElementById(`error-lot-${id}`).textContent = 'Required'; valid = false;
           }
           if (!document.getElementById(`exp-${id}`).value) {
-            document.getElementById(`error-exp-${id}`).textContent = 'Required';
-            valid = false;
+            document.getElementById(`error-exp-${id}`).textContent = 'Required'; valid = false;
           }
         });
         return valid;
@@ -92,39 +91,33 @@
         if (!validateInputs()) return;
         const tasklist = document.getElementById('tasklist').value.trim();
         lastTimestamp = new Date().toLocaleString();
-        const lines = [`Tasklist: ${tasklist}`, `Generated: ${lastTimestamp}`];
+        const rows = [[ 'Tasklist', tasklist ], [ 'Generated', lastTimestamp ]];
         reagents.forEach(name => {
           const id = name.replace(/\s+/g, '_');
           const lot = document.getElementById(`lot-${id}`).value.trim().toUpperCase();
           const exp = document.getElementById(`exp-${id}`).value;
-          lines.push(`${name} | Lot: ${lot} | Exp: ${exp}`);
+          rows.push([ name, `Lot: ${lot} | Exp: ${exp}` ]);
         });
-        const text = lines.join('\n');
-        qr.value = text;
-        printBtn.disabled = false;
+        // update QR
+        const text = rows.map(r => `${r[0]}: ${r[1]}`).join('\n');
+        qr.value = text; printBtn.disabled = false;
+        // display table
+        let html = '<table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>';
+        rows.forEach(r => {
+          html += `<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('table-container').innerHTML = html;
       });
       printBtn.addEventListener('click', () => {
         if (!qr.value) return;
-        const tasklist = escapeHtml(document.getElementById('tasklist').value.trim());
-        const timestamp = escapeHtml(lastTimestamp);
-        let tableRows = `<tr><td>Tasklist</td><td>${tasklist}</td></tr>`;
-        tableRows += `<tr><td>Generated</td><td>${timestamp}</td></tr>`;
-        reagents.forEach(name => {
-          const id = name.replace(/\s+/g, '_');
-          const lot = escapeHtml(document.getElementById(`lot-${id}`).value.trim().toUpperCase());
-          const exp = escapeHtml(document.getElementById(`exp-${id}`).value);
-          tableRows += `<tr><td>${escapeHtml(name)}</td><td>Lot: ${lot} | Exp: ${exp}</td></tr>`;
-        });
         const imgData = qrCanvas.toDataURL();
+        const tableHtml = document.getElementById('table-container').innerHTML;
         const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Print QR</title><style>
           body{font-family:'Segoe UI',sans-serif;margin:2rem;} h1{text-align:center;} table{width:100%;border-collapse:collapse;margin-top:1rem;} th,td{border:1px solid #333;padding:0.5rem;} th{background:#f4f4f4;text-align:left;}
         </style></head><body onload="window.print();window.close();"><h1>Reagent QR Code</h1><div style="text-align:center;"><img src="${imgData}" alt="QR Code"></div>
-        <table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
-        const popup = window.open('', '_blank');
-        if (!popup) { alert('Please allow popups to print the QR code.'); return; }
-        popup.document.open();
-        popup.document.write(html);
-        popup.document.close();
+        ${tableHtml}</body></html>`;
+        const popup = window.open('', '_blank'); if (!popup){alert('Please allow popups.');return;} popup.document.open(); popup.document.write(html); popup.document.close();
       });
     });
   </script>
