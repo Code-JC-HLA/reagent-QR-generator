@@ -10,6 +10,7 @@
     h1 { text-align: center; font-size: 1.8rem; margin-bottom: 1rem; }
     label { font-weight: 600; font-size: 1rem; }
     input, button { width: 100%; padding: 0.6rem; margin-top: 0.25rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    input.expired { border-color: #d8000c; background-color: #fdecea; }
     button { background-color: #0078d4; color: white; border: none; margin-top: 1.5rem; }
     button:hover:not(:disabled) { background-color: #005a9e; }
     button:disabled { background-color: #ccc; cursor: not-allowed; }
@@ -73,33 +74,33 @@
         reagents.forEach(name => {
           const id = name.replace(/\s+/g, '_');
           document.getElementById(`error-lot-${id}`).textContent = '';
+          const expInput = document.getElementById(`exp-${id}`);
           document.getElementById(`error-exp-${id}`).textContent = '';
+          expInput.classList.remove('expired');
         });
       }
       function validateInputs() {
         let valid = true; clearErrors();
         const tasklist = document.getElementById('tasklist').value.trim();
         if (!tasklist) {
-          document.getElementById('error-tasklist').textContent = 'Required';
-          valid = false;
+          document.getElementById('error-tasklist').textContent = 'Required'; valid = false;
         }
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = new Date(); today.setHours(0,0,0,0);
         reagents.forEach(name => {
           const id = name.replace(/\s+/g, '_');
           const lotVal = document.getElementById(`lot-${id}`).value.trim();
-          const expVal = document.getElementById(`exp-${id}`).value;
+          const expInput = document.getElementById(`exp-${id}`);
+          const expVal = expInput.value;
           if (!lotVal) {
-            document.getElementById(`error-lot-${id}`).textContent = 'Required';
-            valid = false;
+            document.getElementById(`error-lot-${id}`).textContent = 'Required'; valid = false;
           }
           if (!expVal) {
-            document.getElementById(`error-exp-${id}`).textContent = 'Required';
-            valid = false;
+            document.getElementById(`error-exp-${id}`).textContent = 'Required'; valid = false;
           } else {
             const expDate = new Date(expVal);
             if (expDate <= today) {
-              document.getElementById(`error-exp-${id}`).textContent = 'Expired: check reagents and do not use expired reagents';
+              document.getElementById(`error-exp-${id}`).textContent = 'EXPIRED. Double check reagent!!';
+              expInput.classList.add('expired');
               valid = false;
             }
           }
@@ -134,11 +135,7 @@
           body{font-family:'Segoe UI',sans-serif;margin:2rem;} table{width:100%;border-collapse:collapse;margin-top:1rem;} td{border:1px solid #333;padding:0.5rem;}
         </style></head><body onload="window.print();window.close();"><h1>Reagent QR Code</h1><div style="text-align:center;"><img src="${imgData}" alt="QR Code"></div>
         ${tableHtml}</body></html>`;
-        const popup = window.open('', '_blank');
-        if (!popup) { alert('Please allow popups.'); return; }
-        popup.document.open();
-        popup.document.write(html);
-        popup.document.close();
+        const popup = window.open('', '_blank'); if (!popup){alert('Please allow popups.');return;} popup.document.open(); popup.document.write(html); popup.document.close();
       });
     });
   </script>
