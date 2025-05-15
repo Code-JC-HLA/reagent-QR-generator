@@ -27,100 +27,96 @@
     <div id="qr-text"></div>
   </div>
   <script>
-    function escapeHtml(str) {
-      return str.replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
-    }
-    const reagents = [
-      "SAB Class I",
-      "SAB Class II",
-      "ExPlex Class I",
-      "ExPlex Class II",
-      "PBS",
-      "Anti-IgG PE",
-      "Negative Control Serum"
-    ];
-    const container = document.getElementById('reagents');
-    reagents.forEach(name => {
-      const id = name.replace(/\s+/g, '_');
-      const group = document.createElement('div');
-      group.innerHTML =
-        '<label for="lot-' + id + '">' + name + ' - Lot Number:</label>' +
-        '<input type="text" id="lot-' + id + '" placeholder="e.g., 12345A" required>' +
-        '<div class="error" id="error-lot-' + id + '"></div>' +
-        '<label for="exp-' + id + '">' + name + ' - Expiration Date:</label>' +
-        '<input type="date" id="exp-' + id + '" required>' +
-        '<div class="error" id="error-exp-' + id + '"></div>';
-      container.appendChild(group);
-    });
-    const qr = new QRious({
-      element: document.getElementById('qr-canvas'),
-      size: 300,
-      level: 'H',
-      value: ''
-    });
-    const generateBtn = document.getElementById('generateBtn');
-    const printBtn = document.getElementById('printBtn');
-    function clearErrors() {
-      reagents.forEach(name => {
-        const id = name.replace(/\s+/g, '_');
-        document.getElementById('error-lot-' + id).textContent = '';
-        document.getElementById('error-exp-' + id).textContent = '';
-      });
-    }
-    function validateInputs() {
-      let valid = true;
-      clearErrors();
-      reagents.forEach(name => {
-        const id = name.replace(/\s+/g, '_');
-        const lot = document.getElementById('lot-' + id).value.trim();
-        const exp = document.getElementById('exp-' + id).value;
-        if (!lot) {
-          document.getElementById('error-lot-' + id).textContent = 'Required';
-          valid = false;
-        }
-        if (!exp) {
-          document.getElementById('error-exp-' + id).textContent = 'Required';
-          valid = false;
-        }
-      });
-      return valid;
-    }
-    function generateQR() {
-      if (!validateInputs()) return;
-      const lines = reagents.map(name => {
-        const id = name.replace(/\s+/g, '_');
-        const lot = document.getElementById('lot-' + id).value.trim().toUpperCase();
-        const exp = document.getElementById('exp-' + id).value;
-        return name + ' | Lot: ' + lot + ' | Exp: ' + exp;
-      });
-      const text = lines.join('\n');
-      qr.value = text;
-      document.getElementById('qr-text').textContent = text;
-      printBtn.disabled = false;
-    }
-    function printQR() {
-      if (!qr.value) return;
-      const popup = window.open('', '_blank');
-      if (!popup) {
-        alert('Please allow popups to print the QR code.');
-        return;
+    document.addEventListener('DOMContentLoaded', function() {
+      function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;');
       }
-      const imgData = document.getElementById('qr-canvas').toDataURL();
-      const safeText = escapeHtml(qr.value).replace(/\n/g, '<br>');
-      const html =
-        '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Print QR</title></head>' +
-        '<body style="text-align:center;font-family:sans-serif;">' +
-        '<img src="' + imgData + '" alt="Reagent QR Code"><p>' + safeText + '</p>' +
-        '<scr' + 'ipt>window.onload=function(){window.focus();window.print();window.close();}<' + '/scr' + 'ipt>' +
-        '</body></html>';
-      popup.document.write(html);
-      popup.document.close();
-    }
-    generateBtn.addEventListener('click', generateQR);
-    printBtn.addEventListener('click', printQR);
+      const reagents = [
+        "SAB Class I",
+        "SAB Class II",
+        "ExPlex Class I",
+        "ExPlex Class II",
+        "PBS",
+        "Anti-IgG PE",
+        "Negative Control Serum"
+      ];
+      const container = document.getElementById('reagents');
+      reagents.forEach(name => {
+        const id = name.replace(/\s+/g, '_');
+        const div = document.createElement('div');
+        div.innerHTML =
+          '<label for="lot-' + id + '">' + name + ' - Lot Number:</label>' +
+          '<input type="text" id="lot-' + id + '" placeholder="e.g., 12345A" required>' +
+          '<div class="error" id="error-lot-' + id + '"></div>' +
+          '<label for="exp-' + id + '">' + name + ' - Expiration Date:</label>' +
+          '<input type="date" id="exp-' + id + '" required>' +
+          '<div class="error" id="error-exp-' + id + '"></div>';
+        container.appendChild(div);
+      });
+      const qrCanvas = document.getElementById('qr-canvas');
+      const qr = new QRious({ element: qrCanvas, size: 300, level: 'H', value: '' });
+      const generateBtn = document.getElementById('generateBtn');
+      const printBtn = document.getElementById('printBtn');
+      function clearErrors() {
+        reagents.forEach(name => {
+          const id = name.replace(/\s+/g, '_');
+          document.getElementById('error-lot-' + id).textContent = '';
+          document.getElementById('error-exp-' + id).textContent = '';
+        });
+      }
+      function validateInputs() {
+        let valid = true;
+        clearErrors();
+        reagents.forEach(name => {
+          const id = name.replace(/\s+/g, '_');
+          const lot = document.getElementById('lot-' + id).value.trim();
+          const exp = document.getElementById('exp-' + id).value;
+          if (!lot) {
+            document.getElementById('error-lot-' + id).textContent = 'Required';
+            valid = false;
+          }
+          if (!exp) {
+            document.getElementById('error-exp-' + id).textContent = 'Required';
+            valid = false;
+          }
+        });
+        return valid;
+      }
+      generateBtn.addEventListener('click', function() {
+        if (!validateInputs()) return;
+        const lines = reagents.map(name => {
+          const id = name.replace(/\s+/g, '_');
+          const lot = document.getElementById('lot-' + id).value.trim().toUpperCase();
+          const exp = document.getElementById('exp-' + id).value;
+          return name + ' | Lot: ' + lot + ' | Exp: ' + exp;
+        });
+        const text = lines.join('\n');
+        qr.value = text;
+        document.getElementById('qr-text').textContent = text;
+        printBtn.disabled = false;
+      });
+      printBtn.addEventListener('click', function() {
+        if (!qr.value) return;
+        const popup = window.open('', '_blank');
+        if (!popup) {
+          alert('Please allow popups to print the QR code.');
+          return;
+        }
+        const imgData = qrCanvas.toDataURL();
+        const safeText = escapeHtml(qr.value).replace(/\n/g, '<br>');
+        const html =
+          '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Print QR</title></head>' +
+          '<body onload="window.focus();window.print();window.close()" style="text-align:center;font-family:sans-serif;">' +
+          '<img src="' + imgData + '" alt="Reagent QR Code"><p>' + safeText + '</p>' +
+          '</body></html>';
+        popup.document.open();
+        popup.document.write(html);
+        popup.document.close();
+      });
+    });
   </script>
 </body>
 </html>
