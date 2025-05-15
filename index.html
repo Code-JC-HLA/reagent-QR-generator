@@ -6,13 +6,16 @@
   <title>Reagent QR Code Generator</title>
   <script src="https://unpkg.com/qrious@4.0.2/dist/qrious.min.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 2rem; max-width: 600px; margin: auto; }
-    label { display: block; margin-top: 1rem; font-weight: bold; }
-    input, button { width: 100%; padding: 0.5rem; margin-top: 0.5rem; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 2rem; max-width: 600px; margin: auto; line-height: 1.5; }
+    h1 { text-align: center; font-size: 1.8rem; margin-bottom: 1rem; }
+    label { display: block; margin-top: 1rem; font-weight: 600; font-size: 1rem; }
+    input, button { width: 100%; padding: 0.6rem; margin-top: 0.4rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; }
+    button { background-color: #0078d4; color: white; border: none; }
+    button:hover:not(:disabled) { background-color: #005a9e; }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
     #qr-container { text-align: center; margin-top: 2rem; }
-    #qr-text { white-space: pre-wrap; word-break: break-word; margin-top: 1rem; }
-    .error { color: red; font-size: 0.9rem; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #qr-text { display: none; }
+    .error { color: #d8000c; font-size: 0.9rem; margin-top: 0.2rem; }
   </style>
 </head>
 <body>
@@ -27,29 +30,16 @@
   </form>
   <div id="qr-container">
     <canvas id="qr-canvas"></canvas>
-    <div id="qr-text"></div>
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof QRious !== 'function') {
-        alert('QRious library failed to load. Please check your internet connection.');
-        return;
+        alert('QRious library failed to load.'); return;
       }
       function escapeHtml(str) {
-        return str.replace(/&/g, '&amp;')
-                  .replace(/</g, '&lt;')
-                  .replace(/>/g, '&gt;')
-                  .replace(/"/g, '&quot;');
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
-      const reagents = [
-        "SAB Class I",
-        "SAB Class II",
-        "ExPlex Class I",
-        "ExPlex Class II",
-        "PBS",
-        "Anti-IgG PE",
-        "Negative Control Serum"
-      ];
+      const reagents = ["SAB Class I","SAB Class II","ExPlex Class I","ExPlex Class II","PBS","Anti-IgG PE","Negative Control Serum"];
       const container = document.getElementById('reagents');
       reagents.forEach(name => {
         const id = name.replace(/\s+/g, '_');
@@ -64,7 +54,7 @@
         container.appendChild(div);
       });
       const qrCanvas = document.getElementById('qr-canvas');
-      const qr = new QRious({ element: qrCanvas, size: 300, level: 'H', value: '' });
+      const qr = new QRious({ element: qrCanvas, size: 280, level: 'H', value: '' });
       const generateBtn = document.getElementById('generateBtn');
       const printBtn = document.getElementById('printBtn');
       function clearErrors() {
@@ -76,25 +66,13 @@
         });
       }
       function validateInputs() {
-        let valid = true;
-        clearErrors();
+        let valid = true; clearErrors();
         const tasklist = document.getElementById('tasklist').value.trim();
-        if (!tasklist) {
-          document.getElementById('error-tasklist').textContent = 'Required';
-          valid = false;
-        }
+        if (!tasklist) { document.getElementById('error-tasklist').textContent = 'Required'; valid = false; }
         reagents.forEach(name => {
           const id = name.replace(/\s+/g, '_');
-          const lot = document.getElementById(`lot-${id}`).value.trim();
-          const exp = document.getElementById(`exp-${id}`).value;
-          if (!lot) {
-            document.getElementById(`error-lot-${id}`).textContent = 'Required';
-            valid = false;
-          }
-          if (!exp) {
-            document.getElementById(`error-exp-${id}`).textContent = 'Required';
-            valid = false;
-          }
+          if (!document.getElementById(`lot-${id}`).value.trim()) { document.getElementById(`error-lot-${id}`).textContent='Required'; valid=false; }
+          if (!document.getElementById(`exp-${id}`).value)           { document.getElementById(`error-exp-${id}`).textContent='Required'; valid=false; }
         });
         return valid;
       }
@@ -102,36 +80,35 @@
         if (!validateInputs()) return;
         const tasklist = document.getElementById('tasklist').value.trim();
         const timestamp = new Date().toLocaleString();
-        const lines = [`Tasklist: ${tasklist}`, `Generated: ${timestamp}`].concat(
-          reagents.map(name => {
-            const id = name.replace(/\s+/g, '_');
-            const lot = document.getElementById(`lot-${id}`).value.trim().toUpperCase();
-            const exp = document.getElementById(`exp-${id}`).value;
-            return `${name} | Lot: ${lot} | Exp: ${exp}`;
-          })
-        );
-        const text = lines.join('\n');
+        const rows = [`Tasklist`, tasklist, `Generated`, timestamp];
+        reagents.forEach(name => {
+          const id = name.replace(/\s+/g, '_');
+          rows.push(name, document.getElementById(`lot-${id}`).value.trim().toUpperCase(), document.getElementById(`exp-${id}`).value);
+        });
+        const text = rows.slice(0,2).join(': ') + '\n' + rows.slice(2).reduce((acc,cur,i)=> i%3===0? acc+`\n${cur}: `+rows[i+1]+' Exp: '+rows[i+2] : acc,'');
         qr.value = text;
-        document.getElementById('qr-text').textContent = text;
         printBtn.disabled = false;
       });
       printBtn.addEventListener('click', () => {
         if (!qr.value) return;
-        const popup = window.open('', '_blank');
-        if (!popup) {
-          alert('Please allow popups to print the QR code.');
-          return;
-        }
+        const popup = window.open('', '_blank'); if (!popup){alert('Allow popups.');return;}
         const imgData = qrCanvas.toDataURL();
-        const safeText = escapeHtml(qr.value).replace(/\n/g, '<br>');
-        const html =
-          `<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Print QR</title></head>` +
-          `<body onload=\"window.focus();window.print();window.close();\" style=\"text-align:center;font-family:sans-serif;\">` +
-          `<img src=\"${imgData}\" alt=\"Reagent QR Code\"><p>${safeText}</p>` +
-          `</body></html>`;
-        popup.document.open();
-        popup.document.write(html);
-        popup.document.close();
+        const rows = qr.value.split('\n');
+        let tableRows = '';
+        rows.forEach(line => {
+          const parts = line.split('|').map(p=>p.trim());
+          if (parts.length>1) {
+            tableRows += `<tr><td>${escapeHtml(parts[0])}</td><td>${escapeHtml(parts.slice(1).join(' | '))}</td></tr>`;
+          } else {
+            const idx = tableRows?'':'<h2>'+escapeHtml(line)+'</h2>';
+            tableRows = idx + tableRows;
+          }
+        });
+        const html = `<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Print QR</title><style>
+          body{font-family:'Segoe UI',sans-serif;margin:2rem;} h2{text-align:center;} table{width:100%;border-collapse:collapse;margin-top:1rem;} th,td{border:1px solid #333;padding:0.5rem;} th{background:#f4f4f4;text-align:left;}
+        </style></head><body onload=\"window.print();window.close();\"><div style=\"text-align:center;\"><img src=\"${imgData}\" alt=\"QR Code\"></div>
+        <table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
+        popup.document.open(); popup.document.write(html); popup.document.close();
       });
     });
   </script>
