@@ -101,7 +101,8 @@
       generateBtn.addEventListener('click', () => {
         if (!validateInputs()) return;
         const tasklist = document.getElementById('tasklist').value.trim();
-        const lines = [`Tasklist: ${tasklist}`].concat(
+        const timestamp = new Date().toLocaleString();
+        const lines = [`Tasklist: ${tasklist}`, `Generated: ${timestamp}`].concat(
           reagents.map(name => {
             const id = name.replace(/\s+/g, '_');
             const lot = document.getElementById(`lot-${id}`).value.trim().toUpperCase();
