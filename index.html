@@ -18,6 +18,9 @@
 <body>
   <h1>Reagent QR Code Generator</h1>
   <form id="qr-form" novalidate>
+    <label for="tasklist">Tasklist:</label>
+    <input type="text" id="tasklist" placeholder="e.g., ABS-1059 or C1Q-584" required>
+    <div class="error" id="error-tasklist"></div>
     <div id="reagents"></div>
     <button type="button" id="generateBtn">Generate QR Code</button>
     <button type="button" id="printBtn" disabled>Print QR</button>
@@ -65,6 +68,7 @@
       const generateBtn = document.getElementById('generateBtn');
       const printBtn = document.getElementById('printBtn');
       function clearErrors() {
+        document.getElementById('error-tasklist').textContent = '';
         reagents.forEach(name => {
           const id = name.replace(/\s+/g, '_');
           document.getElementById(`error-lot-${id}`).textContent = '';
@@ -74,12 +78,15 @@
       function validateInputs() {
         let valid = true;
         clearErrors();
+        const tasklist = document.getElementById('tasklist').value.trim();
+        if (!tasklist) {
+          document.getElementById('error-tasklist').textContent = 'Required';
+          valid = false;
+        }
         reagents.forEach(name => {
           const id = name.replace(/\s+/g, '_');
-          const lotField = document.getElementById(`lot-${id}`);
-          const expField = document.getElementById(`exp-${id}`);
-          const lot = lotField.value.trim();
-          const exp = expField.value;
+          const lot = document.getElementById(`lot-${id}`).value.trim();
+          const exp = document.getElementById(`exp-${id}`).value;
           if (!lot) {
             document.getElementById(`error-lot-${id}`).textContent = 'Required';
             valid = false;
@@ -93,12 +100,15 @@
       }
       generateBtn.addEventListener('click', () => {
         if (!validateInputs()) return;
-        const lines = reagents.map(name => {
-          const id = name.replace(/\s+/g, '_');
-          const lot = document.getElementById(`lot-${id}`).value.trim().toUpperCase();
-          const exp = document.getElementById(`exp-${id}`).value;
-          return `${name} | Lot: ${lot} | Exp: ${exp}`;
-        });
+        const tasklist = document.getElementById('tasklist').value.trim();
+        const lines = [`Tasklist: ${tasklist}`].concat(
+          reagents.map(name => {
+            const id = name.replace(/\s+/g, '_');
+            const lot = document.getElementById(`lot-${id}`).value.trim().toUpperCase();
+            const exp = document.getElementById(`exp-${id}`).value;
+            return `${name} | Lot: ${lot} | Exp: ${exp}`;
+          })
+        );
         const text = lines.join('\n');
         qr.value = text;
         document.getElementById('qr-text').textContent = text;
