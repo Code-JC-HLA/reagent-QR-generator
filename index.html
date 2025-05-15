@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reagent QR Code Generator</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" integrity="sha512-zO92vlF+XXJP2/TAH3sP2rWlWS2QJHVE7di/5Y8yYelon+J2K1INETVMJY1bZE5YnM5kkx/ZGY2Ett0jKroV3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 2rem; max-width: 600px; margin: auto; }
     label { display: block; margin-top: 1rem; font-weight: bold; }
@@ -28,6 +28,10 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      if (typeof QRious === 'undefined') {
+        alert('QRious library failed to load. Please check your internet connection.');
+        return;
+      }
       function escapeHtml(str) {
         return str.replace(/&/g, '&amp;')
                   .replace(/</g, '&lt;')
@@ -72,14 +76,18 @@
         clearErrors();
         reagents.forEach(name => {
           const id = name.replace(/\s+/g, '_');
-          const lot = document.getElementById('lot-' + id).value.trim();
-          const exp = document.getElementById('exp-' + id).value;
+          const lotField = document.getElementById('lot-' + id);
+          const expField = document.getElementById('exp-' + id);
+          const lot = lotField.value.trim();
+          const exp = expField.value;
           if (!lot) {
             document.getElementById('error-lot-' + id).textContent = 'Required';
+            lotField.focus();
             valid = false;
           }
           if (!exp) {
             document.getElementById('error-exp-' + id).textContent = 'Required';
+            expField.focus();
             valid = false;
           }
         });
