@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reagent QR Code Generator</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script src="https://unpkg.com/qrious@4.0.2/dist/qrious.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 2rem; max-width: 600px; margin: auto; }
     label { display: block; margin-top: 1rem; font-weight: bold; }
@@ -28,7 +28,7 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      if (typeof QRious === 'undefined') {
+      if (typeof QRious !== 'function') {
         alert('QRious library failed to load. Please check your internet connection.');
         return;
       }
@@ -52,12 +52,12 @@
         const id = name.replace(/\s+/g, '_');
         const div = document.createElement('div');
         div.innerHTML =
-          '<label for="lot-' + id + '">' + name + ' - Lot Number:</label>' +
-          '<input type="text" id="lot-' + id + '" placeholder="e.g., 12345A" required>' +
-          '<div class="error" id="error-lot-' + id + '"></div>' +
-          '<label for="exp-' + id + '">' + name + ' - Expiration Date:</label>' +
-          '<input type="date" id="exp-' + id + '" required>' +
-          '<div class="error" id="error-exp-' + id + '"></div>';
+          `<label for=\"lot-${id}\">${name} - Lot Number:</label>` +
+          `<input type=\"text\" id=\"lot-${id}\" placeholder=\"e.g., 12345A\" required>` +
+          `<div class=\"error\" id=\"error-lot-${id}\"></div>` +
+          `<label for=\"exp-${id}\">${name} - Expiration Date:</label>` +
+          `<input type=\"date\" id=\"exp-${id}\" required>` +
+          `<div class=\"error\" id=\"error-exp-${id}\"></div>`;
         container.appendChild(div);
       });
       const qrCanvas = document.getElementById('qr-canvas');
@@ -67,8 +67,8 @@
       function clearErrors() {
         reagents.forEach(name => {
           const id = name.replace(/\s+/g, '_');
-          document.getElementById('error-lot-' + id).textContent = '';
-          document.getElementById('error-exp-' + id).textContent = '';
+          document.getElementById(`error-lot-${id}`).textContent = '';
+          document.getElementById(`error-exp-${id}`).textContent = '';
         });
       }
       function validateInputs() {
@@ -76,37 +76,35 @@
         clearErrors();
         reagents.forEach(name => {
           const id = name.replace(/\s+/g, '_');
-          const lotField = document.getElementById('lot-' + id);
-          const expField = document.getElementById('exp-' + id);
+          const lotField = document.getElementById(`lot-${id}`);
+          const expField = document.getElementById(`exp-${id}`);
           const lot = lotField.value.trim();
           const exp = expField.value;
           if (!lot) {
-            document.getElementById('error-lot-' + id).textContent = 'Required';
-            lotField.focus();
+            document.getElementById(`error-lot-${id}`).textContent = 'Required';
             valid = false;
           }
           if (!exp) {
-            document.getElementById('error-exp-' + id).textContent = 'Required';
-            expField.focus();
+            document.getElementById(`error-exp-${id}`).textContent = 'Required';
             valid = false;
           }
         });
         return valid;
       }
-      generateBtn.addEventListener('click', function() {
+      generateBtn.addEventListener('click', () => {
         if (!validateInputs()) return;
         const lines = reagents.map(name => {
           const id = name.replace(/\s+/g, '_');
-          const lot = document.getElementById('lot-' + id).value.trim().toUpperCase();
-          const exp = document.getElementById('exp-' + id).value;
-          return name + ' | Lot: ' + lot + ' | Exp: ' + exp;
+          const lot = document.getElementById(`lot-${id}`).value.trim().toUpperCase();
+          const exp = document.getElementById(`exp-${id}`).value;
+          return `${name} | Lot: ${lot} | Exp: ${exp}`;
         });
         const text = lines.join('\n');
         qr.value = text;
         document.getElementById('qr-text').textContent = text;
         printBtn.disabled = false;
       });
-      printBtn.addEventListener('click', function() {
+      printBtn.addEventListener('click', () => {
         if (!qr.value) return;
         const popup = window.open('', '_blank');
         if (!popup) {
@@ -116,10 +114,10 @@
         const imgData = qrCanvas.toDataURL();
         const safeText = escapeHtml(qr.value).replace(/\n/g, '<br>');
         const html =
-          '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Print QR</title></head>' +
-          '<body onload="window.focus();window.print();window.close()" style="text-align:center;font-family:sans-serif;">' +
-          '<img src="' + imgData + '" alt="Reagent QR Code"><p>' + safeText + '</p>' +
-          '</body></html>';
+          `<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Print QR</title></head>` +
+          `<body onload=\"window.focus();window.print();window.close();\" style=\"text-align:center;font-family:sans-serif;\">` +
+          `<img src=\"${imgData}\" alt=\"Reagent QR Code\"><p>${safeText}</p>` +
+          `</body></html>`;
         popup.document.open();
         popup.document.write(html);
         popup.document.close();
