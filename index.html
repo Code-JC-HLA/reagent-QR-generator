@@ -4,7 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reagent QR Code Generator</title>
-  <script src="https://unpkg.com/qrious@4.0.2/dist/qrious.min.js"></script>
+
+  <!-- Load local copy of Qrious -->
+  <script src="qrious.min.js"></script>
+
   <style>
     body {
       font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
@@ -124,7 +127,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       if (typeof QRious !== "function") {
-        alert("QRious library failed to load.");
+        alert("Qrious failed to load. Make sure qrious.min.js is in the same folder.");
         return;
       }
 
@@ -190,6 +193,7 @@
         buildReagents(currentList);
       });
 
+      // Initial build
       buildReagents(currentList);
 
       const qrCanvas = document.getElementById("qr-canvas");
@@ -227,14 +231,14 @@
         let valid = true;
         clearErrors();
 
-        // Validate Tasklist
+        // Tasklist validation
         const tasklist = document.getElementById("tasklist").value.trim();
         if (!tasklist) {
           document.getElementById("error-tasklist").textContent = "Required";
           valid = false;
         }
 
-        // Validate Username
+        // Username validation
         const usernameInput = document.getElementById("username");
         const username = usernameInput.value.trim();
         if (!username) {
@@ -242,7 +246,7 @@
           valid = false;
         }
 
-        // Validate each reagent’s lot + expiration
+        // Reagents validation
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -298,7 +302,7 @@
           rows.push([name, `Lot: ${lot} | Exp: ${exp}`]);
         });
 
-        // Build QR text and table
+        // Build QR text & table HTML
         const text = rows.map((r) => `${r[0]}: ${r[1]}`).join("\n");
         qr.value = text;
         printBtn.disabled = false;
