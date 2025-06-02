@@ -1,147 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reagent QR Code Generator</title>
   <script src="https://unpkg.com/qrious@4.0.2/dist/qrious.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 2rem; max-width: 600px; margin: auto; line-height: 1.5; }
-    h1 { text-align: center; font-size: 1.8rem; margin-bottom: 1rem; }
-    label { font-weight: 600; font-size: 1rem; }
-    input, select, button { width: 100%; padding: 0.6rem; margin-top: 0.25rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    input.expired { border-color: #d8000c; background-color: #fdecea; }
-    .error { color: #d8000c; font-size: 0.9rem; margin-top: 0.2rem; }
-    #qr-container { text-align: center; margin-top: 2rem; }
-    #table-container { margin-top: 2rem; }
-    .reagent-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
-    .reagent-field { display: flex; flex-direction: column; }
+    body {
+      font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+      line-height: 1.5;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+    label {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    input,
+    select,
+    button {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.25rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    input.expired {
+      border-color: #d8000c;
+      background-color: #fdecea;
+    }
+    .error {
+      color: #d8000c;
+      font-size: 0.9rem;
+      margin-top: 0.2rem;
+    }
+    #qr-container {
+      text-align: center;
+      margin-top: 2rem;
+    }
+    #table-container {
+      margin-top: 2rem;
+    }
+    .reagent-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .reagent-field {
+      display: flex;
+      flex-direction: column;
+    }
     /* Sticky button bar */
-    #button-bar { position: sticky; top: 0; background: white; padding: 0.5rem 0; display: flex; gap: 1rem; z-index: 100; }
-    #button-bar button { flex: 1; }
+    #button-bar {
+      position: sticky;
+      top: 0;
+      background: white;
+      padding: 0.5rem 0;
+      display: flex;
+      gap: 1rem;
+      z-index: 100;
+    }
+    #button-bar button {
+      flex: 1;
+    }
     /* Table styling */
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    td { border: 1px solid #333; padding: 0.5rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    td {
+      border: 1px solid #333;
+      padding: 0.5rem;
+    }
   </style>
 </head>
 <body>
   <h1>Reagent QR Code Generator</h1>
   <form id="qr-form" novalidate>
+    <!-- New Username Field -->
+    <label for="username">Username:</label>
+    <input type="text" id="username" placeholder="Enter your username" required />
+    <div class="error" id="error-username"></div>
+
     <label for="assay">Assay Type:</label>
     <select id="assay">
       <option value="SAB">ABS</option>
       <option value="C1Q">C1q</option>
     </select>
+
     <label for="tasklist">Tasklist:</label>
-    <input type="text" id="tasklist" placeholder="e.g., ABS-1059 or C1Q-584" required>
+    <input type="text" id="tasklist" placeholder="e.g., ABS 1059 or C1Q 584" required />
     <div class="error" id="error-tasklist"></div>
+
     <div id="reagents"></div>
     <div id="button-bar">
       <button type="button" id="generateBtn">Generate QR Code</button>
       <button type="button" id="printBtn" disabled>Print QR</button>
     </div>
   </form>
+
   <div id="qr-container">
     <canvas id="qr-canvas"></canvas>
   </div>
+
   <div id="table-container"></div>
+
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof QRious !== 'function') { alert('QRious library failed to load.'); return; }
+    document.addEventListener("DOMContentLoaded", function () {
+      if (typeof QRious !== "function") {
+        alert("QRious library failed to load.");
+        return;
+      }
+
       const reagentLists = {
         SAB: [
-          "SAB Class I","SAB Class II","ExPlex Class I","ExPlex Class II",
-          "Negative Control","Class I Positive Control","Class II Positive Control",
-          "EDTA","Anti-IgG PE Stain","Wash Buffer","PBS"
+          "SAB Class I",
+          "SAB Class II",
+          "ExPlex Class I",
+          "ExPlex Class II",
+          "Negative Control",
+          "Class I Positive Control",
+          "Class II Positive Control",
+          "EDTA",
+          "Anti IgG PE Stain",
+          "Wash Buffer",
+          "PBS",
         ],
         C1Q: [
-          "SAB Class I","SAB Class II","ExPlex Class I","ExPlex Class II",
-          "Negative Control","Class I Positive Control","Class II Positive Control",
-          "PBS","C1q Screen","C1q PE Stain","C1q Positive Control Beads","HEPES Buffer"
-        ]
+          "SAB Class I",
+          "SAB Class II",
+          "ExPlex Class I",
+          "ExPlex Class II",
+          "Negative Control",
+          "Class I Positive Control",
+          "Class II Positive Control",
+          "PBS",
+          "C1q Screen",
+          "C1q PE Stain",
+          "C1q Positive Control Beads",
+          "HEPES Buffer",
+        ],
       };
+
       let currentList = reagentLists.SAB;
-      const assaySelect = document.getElementById('assay');
-      const container = document.getElementById('reagents');
+      const assaySelect = document.getElementById("assay");
+      const container = document.getElementById("reagents");
+
       function buildReagents(list) {
-        container.innerHTML = '';
-        list.forEach(name => {
-          const id = name.replace(/\s+/g, '_');
-          const row = document.createElement('div'); row.className = 'reagent-row';
+        container.innerHTML = "";
+        list.forEach((name) => {
+          const id = name.replace(/\s+/g, "_");
+          const row = document.createElement("div");
+          row.className = "reagent-row";
+
           row.innerHTML =
-            `<div class="reagent-field"><label for="lot-${id}">${name} Lot No.</label><input type="text" id="lot-${id}" placeholder="e.g., 12345A" required><div class="error" id="error-lot-${id}"></div></div>` +
-            `<div class="reagent-field"><label for="exp-${id}">${name} Exp.</label><input type="date" id="exp-${id}" required><div class="error" id="error-exp-${id}"></div></div>`;
+            `<div class="reagent-field">` +
+            `<label for="lot-${id}">${name} Lot No.</label>` +
+            `<input type="text" id="lot-${id}" placeholder="e.g. 12345A" required />` +
+            `<div class="error" id="error-lot-${id}"></div>` +
+            `</div>` +
+            `<div class="reagent-field">` +
+            `<label for="exp-${id}">${name} Exp.</label>` +
+            `<input type="date" id="exp-${id}" required />` +
+            `<div class="error" id="error-exp-${id}"></div>` +
+            `</div>`;
+
           container.appendChild(row);
         });
       }
-      assaySelect.addEventListener('change', function() {
+
+      assaySelect.addEventListener("change", function () {
         currentList = reagentLists[this.value];
         buildReagents(currentList);
       });
+
       buildReagents(currentList);
-      const qrCanvas = document.getElementById('qr-canvas');
-      const qr = new QRious({ element: qrCanvas, size: 280, level: 'H', value: '' });
-      const generateBtn = document.getElementById('generateBtn');
-      const printBtn = document.getElementById('printBtn');
-      function escapeHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+      const qrCanvas = document.getElementById("qr-canvas");
+      const qr = new QRious({
+        element: qrCanvas,
+        size: 280,
+        level: "H",
+        value: "",
+      });
+
+      const generateBtn = document.getElementById("generateBtn");
+      const printBtn = document.getElementById("printBtn");
+
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
       function clearErrors() {
-        document.getElementById('error-tasklist').textContent = '';
-        currentList.forEach(name => {
-          const id = name.replace(/\s+/g, '_');
-          document.getElementById(`error-lot-${id}`).textContent = '';
+        // Clear Username error
+        document.getElementById("error-username").textContent = "";
+
+        // Clear Tasklist error
+        document.getElementById("error-tasklist").textContent = "";
+
+        currentList.forEach((name) => {
+          const id = name.replace(/\s+/g, "_");
+          document.getElementById(`error-lot-${id}`).textContent = "";
           const expInput = document.getElementById(`exp-${id}`);
-          document.getElementById(`error-exp-${id}`).textContent = '';
-          expInput.classList.remove('expired');
+          document.getElementById(`error-exp-${id}`).textContent = "";
+          expInput.classList.remove("expired");
         });
       }
+
       function validateInputs() {
-        let valid = true; clearErrors();
-        const tasklist = document.getElementById('tasklist').value.trim();
-        if (!tasklist) { document.getElementById('error-tasklist').textContent = 'Required'; valid = false; }
-        const today = new Date(); today.setHours(0,0,0,0);
-        currentList.forEach(name => {
-          const id = name.replace(/\s+/g, '_');
+        let valid = true;
+        clearErrors();
+
+        // Validate Username
+        const usernameInput = document.getElementById("username");
+        const username = usernameInput.value.trim();
+        if (!username) {
+          document.getElementById("error-username").textContent = "Required";
+          valid = false;
+        }
+
+        // Validate Tasklist
+        const tasklist = document.getElementById("tasklist").value.trim();
+        if (!tasklist) {
+          document.getElementById("error-tasklist").textContent = "Required";
+          valid = false;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        currentList.forEach((name) => {
+          const id = name.replace(/\s+/g, "_");
           const lotInput = document.getElementById(`lot-${id}`);
           const expInput = document.getElementById(`exp-${id}`);
+
           const lot = lotInput.value.trim();
           const expVal = expInput.value;
-          if (!lot) { document.getElementById(`error-lot-${id}`).textContent = 'Required'; valid = false; }
-          if (!expVal) { document.getElementById(`error-exp-${id}`).textContent = 'Required'; valid = false; }
-          else {
+
+          if (!lot) {
+            document.getElementById(`error-lot-${id}`).textContent = "Required";
+            valid = false;
+          }
+          if (!expVal) {
+            document.getElementById(`error-exp-${id}`).textContent = "Required";
+            valid = false;
+          } else {
             const expDate = new Date(expVal);
-            if (expDate <= today) { document.getElementById(`error-exp-${id}`).textContent = 'EXPIRED. Double check reagent!!'; expInput.classList.add('expired'); valid = false; }
+            if (expDate <= today) {
+              document.getElementById(`error-exp-${id}`).textContent =
+                "EXPIRED. Double check reagent!!";
+              expInput.classList.add("expired");
+              valid = false;
+            }
           }
         });
+
         return valid;
       }
-      generateBtn.addEventListener('click', () => {
+
+      generateBtn.addEventListener("click", () => {
         if (!validateInputs()) return;
-        const tasklist = document.getElementById('tasklist').value.trim();
+
+        const username = document.getElementById("username").value.trim();
+        const tasklist = document.getElementById("tasklist").value.trim();
         const timestamp = new Date().toLocaleString();
-        const rows = [['Tasklist', tasklist], ['Generated', timestamp]];
-        currentList.forEach(name => {
-          const id = name.replace(/\s+/g, '_');
-          const lot = document.getElementById(`lot-${id}`).value.trim().toUpperCase();
+
+        // Build rows beginning with Username
+        const rows = [
+          ["Username", username],
+          ["Tasklist", tasklist],
+          ["Generated", timestamp],
+        ];
+
+        currentList.forEach((name) => {
+          const id = name.replace(/\s+/g, "_");
+          const lot = document
+            .getElementById(`lot-${id}`)
+            .value.trim()
+            .toUpperCase();
           const exp = document.getElementById(`exp-${id}`).value;
           rows.push([name, `Lot: ${lot} | Exp: ${exp}`]);
         });
-        const text = rows.map(r => `${r[0]}: ${r[1]}`).join('\n');
-        qr.value = text; printBtn.disabled = false;
-        let html = '<table><tbody>';
-        rows.forEach(r => { html += `<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td></tr>`; });
-        html += '</tbody></table>';
-        document.getElementById('table-container').innerHTML = html;
+
+        const text = rows.map((r) => `${r[0]}: ${r[1]}`).join("\n");
+        qr.value = text;
+        printBtn.disabled = false;
+
+        let html = "<table><tbody>";
+        rows.forEach((r) => {
+          html += `<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(
+            r[1]
+          )}</td></tr>`;
+        });
+        html += "</tbody></table>";
+        document.getElementById("table-container").innerHTML = html;
       });
-      printBtn.addEventListener('click', () => {
+
+      printBtn.addEventListener("click", () => {
         if (!qr.value) return;
         const imgData = qrCanvas.toDataURL();
-        const tableHtml = document.getElementById('table-container').innerHTML;
-        const printHtml = `<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Print QR</title><style>
+        const tableHtml = document.getElementById("table-container").innerHTML;
+        const printHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Print QR</title><style>
           body{font-family:'Segoe UI',sans-serif;margin:2rem;} table{width:100%;border-collapse:collapse;margin-top:1rem;} td{border:1px solid #333;padding:0.5rem;}
-        </style></head><body onload=\"window.print();window.close();\"><h1>Reagent QR Code</h1><div style=\"text-align:center;\"><img src=\"${imgData}\" alt=\"QR Code\"></div>
+        </style></head><body onload="window.print();window.close();"><h1>Reagent QR Code</h1><div style="text-align:center;"><img src="${imgData}" alt="QR Code"></div>
         ${tableHtml}</body></html>`;
-        const popup = window.open('', '_blank'); if (!popup) { alert('Please allow popups.'); return; }
-        popup.document.open(); popup.document.write(printHtml); popup.document.close();
+        const popup = window.open("", "_blank");
+        if (!popup) {
+          alert("Please allow popups.");
+          return;
+        }
+        popup.document.open();
+        popup.document.write(printHtml);
+        popup.document.close();
       });
     });
   </script>
