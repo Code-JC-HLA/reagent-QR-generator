@@ -319,11 +319,12 @@
 
       printBtn.addEventListener("click", () => {
         if (!qr.value) return;
+        const tasklist = document.getElementById("tasklist").value.trim();
         const imgData = qrCanvas.toDataURL();
         const tableHtml = document.getElementById("table-container").innerHTML;
         const printHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Print QR</title><style>
           body{font-family:'Segoe UI',sans-serif;margin:2rem;} table{width:100%;border-collapse:collapse;margin-top:1rem;} td{border:1px solid #333;padding:0.5rem;}
-        </style></head><body onload="window.print();window.close();"><h1>Reagents Used</h1><div style="text-align:center;"><img src="${imgData}" alt="QR Code"></div>
+        </style></head><body onload="window.print();window.close();"><h1>Reagents used for "${tasklist}"</h1><div style="text-align:center;"><img src="${imgData}" alt="QR Code"></div>
         ${tableHtml}</body></html>`;
         const popup = window.open("", "_blank");
         if (!popup) {
