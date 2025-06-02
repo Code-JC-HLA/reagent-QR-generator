@@ -101,7 +101,7 @@
     <div class="reagent-row">
       <div class="reagent-field">
         <label for="tasklist">Tasklist:</label>
-        <input type="text" id="tasklist" placeholder="e.g., ABS-1234 or C1Q-551" required />
+        <input type="text" id="tasklist" placeholder="e.g., C1Q-551" required />
         <div class="error" id="error-tasklist"></div>
       </div>
       <div class="reagent-field">
@@ -143,7 +143,7 @@
           "EDTA",
           "Anti-IgG PE Stain",
           "Wash Buffer",
-          "PBS"
+          "PBS",
         ],
         C1Q: [
           "SAB Class I",
@@ -157,8 +157,8 @@
           "C1q Screen",
           "C1q PE Stain",
           "C1q Positive Control Beads",
-          "HEPES Buffer"
-        ]
+          "HEPES Buffer",
+        ],
       };
 
       let currentList = reagentLists.SAB;
@@ -201,7 +201,7 @@
         element: qrCanvas,
         size: 280,
         level: "H",
-        value: ""
+        value: "",
       });
 
       const generateBtn = document.getElementById("generateBtn");
@@ -289,7 +289,7 @@
         const rows = [
           ["Tasklist", tasklist],
           ["Username", username],
-          ["Generated", timestamp]
+          ["Generated", timestamp],
         ];
 
         currentList.forEach((name) => {
@@ -320,8 +320,9 @@
       printBtn.addEventListener("click", () => {
         if (!qr.value) return;
 
-        // Re-read Tasklist right when Print is clicked
+        // Re-read Tasklist right when Print is clicked:
         const tasklist = document.getElementById("tasklist").value.trim();
+
         const imgData = qrCanvas.toDataURL();
         const tableHtml = document.getElementById("table-container").innerHTML;
 
@@ -331,41 +332,16 @@
     <meta charset="UTF-8" />
     <title>Print QR</title>
     <style>
-      /* Ensure everything fits on one sheet */
-      @page {
-        margin: 0.5in;
-      }
-      body {
-        font-family: 'Segoe UI', sans-serif;
-        margin: 0; 
-        font-size: 10pt;
-      }
-      h1 {
-        font-size: 14pt;
-        text-align: center;
-        margin-bottom: 0.5rem;
-      }
-      img {
-        display: block;
-        max-width: 100%;
-        height: auto;
-        margin: 0 auto 1rem auto;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 9pt;
-        margin-top: 0.5rem;
-      }
-      td {
-        border: 1px solid #333;
-        padding: 0.25rem;
-      }
+      body { font-family: 'Segoe UI', sans-serif; margin: 2rem; }
+      table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+      td { border: 1px solid #333; padding: 0.5rem; }
     </style>
   </head>
   <body onload="window.print();window.close();">
     <h1>Reagents used for "${tasklist}"</h1>
-    <img src="${imgData}" alt="QR Code" />
+    <div style="text-align:center;">
+      <img src="${imgData}" alt="QR Code" />
+    </div>
     ${tableHtml}
   </body>
 </html>`;
