@@ -87,6 +87,13 @@
 <body>
   <h1>Reagent QR Code Generator</h1>
   <form id="qr-form" novalidate>
+    <!-- Assay Type at the top -->
+    <label for="assay">Assay Type:</label>
+    <select id="assay">
+      <option value="SAB">ABS</option>
+      <option value="C1Q">C1q</option>
+    </select>
+
     <!-- Tasklist and Username on one line -->
     <div class="reagent-row">
       <div class="reagent-field">
@@ -100,12 +107,6 @@
         <div class="error" id="error-username"></div>
       </div>
     </div>
-
-    <label for="assay">Assay Type:</label>
-    <select id="assay">
-      <option value="SAB">ABS</option>
-      <option value="C1Q">C1q</option>
-    </select>
 
     <div id="reagents"></div>
     <div id="button-bar">
@@ -226,11 +227,14 @@
         let valid = true;
         clearErrors();
 
+        // Validate Tasklist
         const tasklist = document.getElementById("tasklist").value.trim();
         if (!tasklist) {
           document.getElementById("error-tasklist").textContent = "Required";
           valid = false;
         }
+
+        // Validate Username
         const usernameInput = document.getElementById("username");
         const username = usernameInput.value.trim();
         if (!username) {
@@ -238,6 +242,7 @@
           valid = false;
         }
 
+        // Validate each reagent’s lot + expiration
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -293,6 +298,7 @@
           rows.push([name, `Lot: ${lot} | Exp: ${exp}`]);
         });
 
+        // Build QR text and table
         const text = rows.map((r) => `${r[0]}: ${r[1]}`).join("\n");
         qr.value = text;
         printBtn.disabled = false;
