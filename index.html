@@ -87,20 +87,25 @@
 <body>
   <h1>Reagent QR Code Generator</h1>
   <form id="qr-form" novalidate>
-    <!-- New Username Field -->
-    <label for="username">Username:</label>
-    <input type="text" id="username" placeholder="Enter your username" required />
-    <div class="error" id="error-username"></div>
+    <!-- Tasklist and Username on one line -->
+    <div class="reagent-row">
+      <div class="reagent-field">
+        <label for="tasklist">Tasklist:</label>
+        <input type="text" id="tasklist" placeholder="e.g., ABS 1059 or C1Q 584" required />
+        <div class="error" id="error-tasklist"></div>
+      </div>
+      <div class="reagent-field">
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter your username" required />
+        <div class="error" id="error-username"></div>
+      </div>
+    </div>
 
     <label for="assay">Assay Type:</label>
     <select id="assay">
       <option value="SAB">ABS</option>
       <option value="C1Q">C1q</option>
     </select>
-
-    <label for="tasklist">Tasklist:</label>
-    <input type="text" id="tasklist" placeholder="e.g., ABS 1059 or C1Q 584" required />
-    <div class="error" id="error-tasklist"></div>
 
     <div id="reagents"></div>
     <div id="button-bar">
@@ -206,12 +211,8 @@
       }
 
       function clearErrors() {
-        // Clear Username error
-        document.getElementById("error-username").textContent = "";
-
-        // Clear Tasklist error
         document.getElementById("error-tasklist").textContent = "";
-
+        document.getElementById("error-username").textContent = "";
         currentList.forEach((name) => {
           const id = name.replace(/\s+/g, "_");
           document.getElementById(`error-lot-${id}`).textContent = "";
@@ -225,18 +226,15 @@
         let valid = true;
         clearErrors();
 
-        // Validate Username
+        const tasklist = document.getElementById("tasklist").value.trim();
+        if (!tasklist) {
+          document.getElementById("error-tasklist").textContent = "Required";
+          valid = false;
+        }
         const usernameInput = document.getElementById("username");
         const username = usernameInput.value.trim();
         if (!username) {
           document.getElementById("error-username").textContent = "Required";
-          valid = false;
-        }
-
-        // Validate Tasklist
-        const tasklist = document.getElementById("tasklist").value.trim();
-        if (!tasklist) {
-          document.getElementById("error-tasklist").textContent = "Required";
           valid = false;
         }
 
@@ -275,14 +273,13 @@
       generateBtn.addEventListener("click", () => {
         if (!validateInputs()) return;
 
-        const username = document.getElementById("username").value.trim();
         const tasklist = document.getElementById("tasklist").value.trim();
+        const username = document.getElementById("username").value.trim();
         const timestamp = new Date().toLocaleString();
 
-        // Build rows beginning with Username
         const rows = [
-          ["Username", username],
           ["Tasklist", tasklist],
+          ["Username", username],
           ["Generated", timestamp],
         ];
 
