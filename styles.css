@@ -1,0 +1,103 @@
+body {
+  background-image: url('HLA-A2.jpeg');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  margin: 0;
+  background-color: #fff;
+}
+
+/* Overlay for improving text visual */
+.overlay {
+  background-color: rgba(255,255,255,0.85);
+  font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+  padding: 2rem;
+  max-width: 600px;
+  margin: auto;
+  line-height: 1.5;
+}
+
+h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+input,
+select,
+button {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 0.25rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input.expired {
+  border-color: #d8000c;
+  background-color: #fdecea;
+}
+
+.error {
+  color: #d8000c;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+/* Hide the QR container until a code is generated */
+#qr-container {
+  display: none;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+#table-container {
+  margin-top: 2rem;
+}
+
+.reagent-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.reagent-field {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sticky button bar */
+#button-bar {
+  position: sticky;
+  top: 0;
+  background: white;
+  padding: 0.5rem 0;
+  display: flex;
+  gap: 1rem;
+  z-index: 100;
+}
+
+#button-bar button {
+  flex: 1;
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+td {
+  border: 1px solid #333;
+  padding: 0.5rem;
+}
