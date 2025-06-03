@@ -16,6 +16,17 @@ Based on jsqrencode | (C) 2010 tz@execpc.com | GPL v3 License
 
   <style>
     body {
+      background-image: url('HLA-A2.jpeg');
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      margin: 0;
+      background-color: #fff;
+    }
+    /* Overlay for improving text visual */
+    .overlay {
+      background-color: rgba(255,255,255,0.85);
       font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
       padding: 2rem;
       max-width: 600px;
@@ -96,6 +107,7 @@ Based on jsqrencode | (C) 2010 tz@execpc.com | GPL v3 License
   </style>
 </head>
 <body>
+  <div class="overlay">
   <h1>Lotus – Lots Used</h1>
   <form id="qr-form" novalidate>
     <!-- Assay Type at the top -->
@@ -132,7 +144,7 @@ Based on jsqrencode | (C) 2010 tz@execpc.com | GPL v3 License
   </div>
 
   <div id="table-container"></div>
-
+  </div>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       if (typeof QRious !== "function") {
