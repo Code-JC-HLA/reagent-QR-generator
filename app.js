@@ -1,4 +1,6 @@
 // app.js
+// Externalize all inline styles and onload scripting for the print popup
+
 document.addEventListener("DOMContentLoaded", function () {
   if (typeof QRious !== "function") {
     alert("Qrious failed to load. The script may be missing or corrupted.");
@@ -204,21 +206,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const imgData = qrCanvas.toDataURL();
     const tableHtml = document.getElementById("table-container").innerHTML;
 
+    // Now reference external CSS (print.css) and JS (print.js) instead of inline
     const printHtml = `<!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Print QR</title>
-    <style>
-      body { font-family: 'Segoe UI', sans-serif; margin: 2rem; }
-      table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-      td { border: 1px solid #333; padding: 0.5rem; }
-    </style>
+    <link rel="stylesheet" href="print.css">
+    <script src="print.js"></script>
   </head>
-  <body onload="window.print();window.close();">
-    <h1>Reagents used for "${tasklist}"</h1>
-    <div style="text-align:center;">
-      <img src="${imgData}" alt="QR Code" />
+  <body>
+    <h1>Reagents used for \"${tasklist}\"</h1>
+    <div>
+      <img src=\"${imgData}\" alt=\"QR Code\" />
     </div>
     ${tableHtml}
   </body>
@@ -229,7 +229,7 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Please allow popups to print.");
       return;
     }
-    popup.opener = null;                       
+    popup.opener = null;
     popup.document.open();
     popup.document.write(printHtml);
     popup.document.close();

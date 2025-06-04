@@ -1,0 +1,27 @@
+body {
+  font-family: "Segoe UI", sans-serif;
+  margin: 2rem;
+}
+
+h1 {
+  /* same styling as your main page or adjusted as needed */
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+td {
+  border: 1px solid #333;
+  padding: 0.5rem;
+}
+
+img {
+  display: block;
+  margin: 0 auto;
+}
